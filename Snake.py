@@ -1,8 +1,10 @@
 import pygame as pg
+import random as rd
+import copy
 
 pg.init()
 
-framerate = 5
+framerate = 7
 
 #Background parameters
 bg_color = (87, 130, 52)
@@ -20,10 +22,6 @@ X = [i*sq_width for i in range(nbr_hor_squares)]
 Y = [i*sq_height for i in range(nbr_ver_squares)]
 
 #Snake intialization
-'''
-Le serpent est stocké dans une liste contenant les coordonées et directions de chaque carré 
-le composant afin de pouvoir aumgenter la taille du serpent par la queue lorsqu'il mange un fruit
-'''
 snake = [[[7, 9], 'right'], [[6, 9], 'right'], [[5, 9], 'right']]                        # snake = [head, ..., tail]
 
 screen = pg.display.set_mode((sc_width, sc_height))
@@ -31,7 +29,6 @@ clock = pg.time.Clock()
 flag = True
 
 def snake_step(snake):
-
     for i in snake:
         if i[1] == 'right':
             i[0][0] += 1
@@ -43,12 +40,33 @@ def snake_step(snake):
             i[0][1] += 1
 
 def snake_dir_propagation(snake):
-
     for i in range(len(snake)-1, 0, -1):
         snake[i][1] = snake[i-1][1]
 
+def random_fruit():
+    return [X[rd.randrange(nbr_hor_squares)],Y[rd.randrange(nbr_ver_squares)]]
+
+fruit = random_fruit()
 
 while flag:
+
+    head = snake[0]
+    tail = snake[-1]
+
+    if [X[head[0][0]], Y[head[0][1]]] == fruit:                     # interaction with fruit
+        
+        new_tail = copy.deepcopy(tail)
+        if tail[1] == 'right':
+            new_tail[0][0] -= 1
+        elif tail[1] == 'left':
+            new_tail[0][0] += 1
+        elif tail[1] == 'up':
+            new_tail[0][1] += 1
+        else:
+            new_tail[0][1] -= 1 
+        snake.append(new_tail)
+        
+        fruit = random_fruit()
 
     screen.fill(bg_color)                                           # draw background
 
@@ -61,6 +79,9 @@ while flag:
     for p in snake:                                                 # draw snake 
         rect = pg.Rect(X[p[0][0]], Y[p[0][1]], sq_width, sq_height)
         pg.draw.rect(screen, snake_col, rect)
+
+    rect = pg.Rect(fruit[0], fruit[1], sq_width, sq_height)
+    pg.draw.rect(screen, (220, 40, 50), rect)                       # draw fruit
 
     for event in pg.event.get():
 
@@ -77,7 +98,9 @@ while flag:
                 snake[0][1] = 'left'
 
     head = snake[0]
-    if head[0][0] == 0 and head[1] == 'left':                      #Exit if the snake goes into the border
+    tail = snake[-1]
+
+    if head[0][0] == 0 and head[1] == 'left':                      #Exit if collision with the border
         flag = False
     if head[0][0] == nbr_hor_squares-1 and head[1] == 'right':
         flag = False
@@ -85,6 +108,10 @@ while flag:
         flag = False
     if head[0][1] == nbr_ver_squares-1 and head[1] == 'down':
         flag = False
+
+    for i in range(1, len(snake)):                                 #Exit if collision with self
+        if head[0] == snake[i][0]:
+            flag = False
 
     snake_step(snake)
     snake_dir_propagation(snake)
