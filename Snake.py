@@ -76,6 +76,16 @@ while flag:
             if event.key == pg.K_LEFT:
                 snake[0][1] = 'left'
 
+    head = snake[0]
+    if head[0][0] == 0 and head[1] == 'left':                      #Exit if the snake goes into the border
+        flag = False
+    if head[0][0] == nbr_hor_squares-1 and head[1] == 'right':
+        flag = False
+    if head[0][1] == 0 and head[1] == 'up':
+        flag = False
+    if head[0][1] == nbr_ver_squares-1 and head[1] == 'down':
+        flag = False
+
     snake_step(snake)
     snake_dir_propagation(snake)
 
