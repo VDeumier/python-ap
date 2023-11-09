@@ -85,8 +85,10 @@ while flag:
 
     for event in pg.event.get():
 
+        if event.type == pg.QUIT:                                   #quit game window
+            flag = False
         if event.type == pg.KEYDOWN:
-            if event.key == pg.K_q:                                 #quit game window
+            if event.key == pg.K_q:                                 
                 flag = False
             if event.key == pg.K_UP:                                #direction input
                 snake[0][1] = 'up'
