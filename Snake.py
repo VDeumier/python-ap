@@ -3,6 +3,7 @@ import random as rd
 import copy
 
 pg.init()
+pg.font.init()
 
 framerate = 5
 
@@ -23,6 +24,10 @@ Y = [i*sq_height for i in range(nbr_ver_squares)]
 
 #Snake intialization
 snake = [[[7, 9], 'right'], [[6, 9], 'right'], [[5, 9], 'right']]                        # snake = [head, ..., tail]
+
+#Score parameters
+score = 0
+score_incr = 1
 
 screen = pg.display.set_mode((sc_width, sc_height))
 clock = pg.time.Clock()
@@ -65,6 +70,8 @@ while flag:
         else:
             new_tail[0][1] -= 1 
         snake.append(new_tail)
+
+        score += score_incr
         
         fruit = random_fruit()
 
@@ -80,8 +87,12 @@ while flag:
         rect = pg.Rect(X[p[0][0]], Y[p[0][1]], sq_width, sq_height)
         pg.draw.rect(screen, snake_col, rect)
 
-    rect = pg.Rect(fruit[0], fruit[1], sq_width, sq_height)
-    pg.draw.rect(screen, (220, 40, 50), rect)                       # draw fruit
+    rect = pg.Rect(fruit[0], fruit[1], sq_width, sq_height)         # draw fruit
+    pg.draw.rect(screen, (220, 40, 50), rect)                       
+
+    font = pg.font.Font(None, 36)                                   # display score
+    score_text = font.render(f'Score: {score}', True, (255, 255, 255))
+    screen.blit(score_text, (10, 10))
 
     for event in pg.event.get():
 
