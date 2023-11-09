@@ -4,14 +4,14 @@ import copy
 
 pg.init()
 
-framerate = 7
+framerate = 5
 
 #Background parameters
 bg_color = (87, 130, 52)
 brighter_col = (87, 200, 52)
 snake_col = (40, 70, 130)
-sc_height = 300                          
-sc_width = 400
+sc_height = 600                          
+sc_width = 800
 
 #Checkers parameters
 nbr_hor_squares = 20
@@ -113,7 +113,7 @@ while flag:
         if head[0] == snake[i][0]:
             flag = False
 
-    snake_step(snake)
+    snake_step(snake)                                              # Update snake position 
     snake_dir_propagation(snake)
 
     pg.display.update()
