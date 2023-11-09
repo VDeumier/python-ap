@@ -1,17 +1,15 @@
 import pygame as pg
 import random as rd
-import copy
 
 pg.init()
 pg.font.init()
 
-framerate = 5
+framerate = 6
 
 #Background parameters
 bg_color = (87, 130, 52)
 brighter_col = (87, 200, 52)
-snake_col = (40, 70, 130)
-sc_height = 600                          
+sc_height = 600
 sc_width = 800
 
 #Checkers parameters
@@ -22,8 +20,13 @@ sq_height = sc_height/nbr_ver_squares
 X = [i*sq_width for i in range(nbr_hor_squares)]
 Y = [i*sq_height for i in range(nbr_ver_squares)]
 
-#Snake intialization
-snake = [[[7, 9], 'right'], [[6, 9], 'right'], [[5, 9], 'right']]                        # snake = [head, ..., tail]
+#Fruit parameters
+fruit_col = (220, 40, 50)
+
+#Snake parameters
+snake = [(7, 9), (6, 9), (5, 9)]                        # snake = [head, ..., tail]
+snake_dir = 'right'
+snake_col = (40, 70, 130)
 
 #Score parameters
 score = 0
@@ -34,22 +37,19 @@ clock = pg.time.Clock()
 flag = True
 
 def snake_step(snake):
-    for i in snake:
-        if i[1] == 'right':
-            i[0][0] += 1
-        elif i[1] == 'left':
-            i[0][0] -= 1
-        elif i[1] == 'up':
-            i[0][1] -= 1
-        else:
-            i[0][1] += 1
+    snake.pop()
+    if snake_dir == 'right':
+        snake.insert(0, (snake[0][0]+1, snake[0][1]))
+    elif snake_dir == 'left':
+        snake.insert(0, (snake[0][0]-1, snake[0][1]))
+    elif snake_dir == 'up':
+        snake.insert(0, (snake[0][0], snake[0][1]-1))
+    else:
+        snake.insert(0,(snake[0][0], snake[0][1]+1))
 
-def snake_dir_propagation(snake):
-    for i in range(len(snake)-1, 0, -1):
-        snake[i][1] = snake[i-1][1]
 
 def random_fruit():
-    return [X[rd.randrange(nbr_hor_squares)],Y[rd.randrange(nbr_ver_squares)]]
+    return (X[rd.randrange(nbr_hor_squares)],Y[rd.randrange(nbr_ver_squares)])
 
 fruit = random_fruit()
 
@@ -58,21 +58,9 @@ while flag:
     head = snake[0]
     tail = snake[-1]
 
-    if [X[head[0][0]], Y[head[0][1]]] == fruit:                     # interaction with fruit
-        
-        new_tail = copy.deepcopy(tail)
-        if tail[1] == 'right':
-            new_tail[0][0] -= 1
-        elif tail[1] == 'left':
-            new_tail[0][0] += 1
-        elif tail[1] == 'up':
-            new_tail[0][1] += 1
-        else:
-            new_tail[0][1] -= 1 
-        snake.append(new_tail)
-
-        score += score_incr
-        
+    if (X[head[0]], Y[head[1]]) == fruit:                     # interaction with fruit        
+        snake.append(tail)
+        score += score_incr       
         fruit = random_fruit()
 
     screen.fill(bg_color)                                           # draw background
@@ -84,13 +72,13 @@ while flag:
                 pg.draw.rect(screen, brighter_col, rect)
 
     for p in snake:                                                 # draw snake 
-        rect = pg.Rect(X[p[0][0]], Y[p[0][1]], sq_width, sq_height)
+        rect = pg.Rect(X[p[0]], Y[p[1]], sq_width, sq_height)
         pg.draw.rect(screen, snake_col, rect)
 
     rect = pg.Rect(fruit[0], fruit[1], sq_width, sq_height)         # draw fruit
-    pg.draw.rect(screen, (220, 40, 50), rect)                       
+    pg.draw.rect(screen, fruit_col, rect)                       
 
-    font = pg.font.Font(None, 36)                                   # display score
+    font = pg.font.Font(None, 56)                                   # display score
     score_text = font.render(f'Score: {score}', True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
 
@@ -102,32 +90,31 @@ while flag:
             if event.key == pg.K_q:                                 
                 flag = False
             if event.key == pg.K_UP:                                #direction input
-                snake[0][1] = 'up'
+                snake_dir = 'up'
             if event.key == pg.K_DOWN:
-                snake[0][1] = 'down'
+                snake_dir = 'down'
             if event.key == pg.K_RIGHT:
-                snake[0][1] = 'right'
+                snake_dir = 'right'
             if event.key == pg.K_LEFT:
-                snake[0][1] = 'left'
+                snake_dir = 'left'
 
     head = snake[0]
     tail = snake[-1]
 
-    if head[0][0] == 0 and head[1] == 'left':                      #Exit if collision with the border
+    if head[0] == 0 and snake_dir == 'left':                      #Exit if collision with the border
         flag = False
-    if head[0][0] == nbr_hor_squares-1 and head[1] == 'right':
+    if head[0] == nbr_hor_squares-1 and snake_dir == 'right':
         flag = False
-    if head[0][1] == 0 and head[1] == 'up':
+    if head[1] == 0 and snake_dir == 'up':
         flag = False
-    if head[0][1] == nbr_ver_squares-1 and head[1] == 'down':
+    if head[1] == nbr_ver_squares-1 and snake_dir == 'down':
         flag = False
 
     for i in range(1, len(snake)):                                 #Exit if collision with self
-        if head[0] == snake[i][0]:
+        if head == snake[i]:
             flag = False
 
     snake_step(snake)                                              # Update snake position 
-    snake_dir_propagation(snake)
 
     pg.display.update()
     clock.tick(framerate)
